@@ -2,7 +2,7 @@ import numpy as np
 from pyldpc import decode, get_message
 
 class LDPCDecoder:
-    def __init__(self, G, H, maxiter=50):
+    def __init__(self, G, H, maxiter=100):
         self.G = G
         self.H = H
         self.maxiter = maxiter

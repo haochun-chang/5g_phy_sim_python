@@ -47,6 +47,7 @@ for i in range(0, len(bits), k):
     encoded.append(encoder.encode(bits[i:i+k]))
 encoded = np.concatenate(encoded).astype(np.int64)
 # print(type(encoded))
+# print(encoded[:20])
 
 # QAM 調變
 symbols = modulator.modulate(encoded)
@@ -91,17 +92,26 @@ for i in range(num_ofdm_symbols):
     rx_data.append(equalized)
 rx_symbols = np.concatenate(rx_data)
 
-# QAM 解調
-rx_bits = modulator.demodulate(rx_symbols, hard=True)
+# QAM 解調 (soft decision)
+# print(rx_symbols[:20])
+rx_llr = modulator.demodulate(rx_symbols, hard=False, noise_var=noise_power / 2)
+#rx_llr = modulator.demodulate(rx_symbols[:256], hard=False, noise_var=noise_power / 2)
+
+# Debug: 檢查 LLR 統計量與範圍
+#print(rx_llr[:20])
+#print("LLR min/max/mean/std:", rx_llr.min(), rx_llr.max(), rx_llr.mean(), rx_llr.std())
+
+# Clip 避免過大或過小值導致數值問題（根據 pyldpc 的建議範圍）
+# rx_llr = np.clip(rx_llr, -20, 20)
 
 # LDPC 解碼
 decoded = []
-for i in range(0, len(rx_bits), 64):
-    llr = 2 * rx_bits[i:i+64] - 1  # BPSK-like LLR approximation
-    decoded.append(decoder.decode(llr, snr=1000))
+for i in range(0, len(rx_llr), 64):
+    decoded_bits = decoder.decode(rx_llr[i:i+64], snr=1000)
+    decoded.append(decoded_bits)
 decoded = np.concatenate(decoded)
 
-# 計算 BER
+# 計算 BER 並輸出比對前後
 original = bits[:len(decoded)]
 ber = np.mean(original != decoded)
 print(original[:20])
