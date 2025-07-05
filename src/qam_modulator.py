@@ -20,7 +20,7 @@ class Modulator:
 
     # add patch to org commpy code
     def demodulate_soft(self, input_symbols, noise_var=0):
-        print(noise_var)
+        # print(f"noise_var = {noise_var}")
         demod_bits = np.zeros(len(input_symbols) * self.num_bits_symbol)
         
         for i in range(len(input_symbols)):

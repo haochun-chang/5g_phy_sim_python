@@ -13,7 +13,7 @@ from qam_modulator import Modulator
 mod_order = 4  # QPSK
 n_subcarriers = 64
 cp_len = 16
-num_ofdm_symbols = 10 ** 4
+num_ofdm_symbols = 10 ** 3
 pilot_spacing = 4
 pilot_indices = np.arange(0, n_subcarriers, pilot_spacing)
 data_indices = np.setdiff1d(np.arange(n_subcarriers), pilot_indices)
@@ -34,7 +34,7 @@ bit_source = BitSource(mod_order * len(data_indices) * num_ofdm_symbols)
 modulator = Modulator(mod_order)
 ofdm = OFDMModulator(n_subcarriers, cp_len)
 channel = ChannelModel(snr_db=snr_db, num_taps=8, decay=0.7, seed=42)
-estimator = ChannelEstimator(method='ls', interp='cubic', num_taps=8)
+estimator = ChannelEstimator(method='dft', interp='cubic', num_taps=8, adaptive_tap = True)
 equalizer = Equalizer(method='mmse')
 decoder = LDPCDecoder(G, H, 100)
 
@@ -87,7 +87,7 @@ rx_data = []
 for i in range(num_ofdm_symbols):
     Yp = rx_freq[i, pilot_indices]
     Xp = zc_seq
-    estimated_channel = estimator.estimate(Yp, Xp, pilot_indices, n_subcarriers)
+    estimated_channel = estimator.estimate(Yp, Xp, pilot_indices, n_subcarriers, noise_power = noise_power)
     equalized = equalizer.equalize(rx_freq[i, data_indices], estimated_channel[data_indices], noise_power = noise_power)
     rx_data.append(equalized)
 rx_symbols = np.concatenate(rx_data)
