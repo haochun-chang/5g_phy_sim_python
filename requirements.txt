@@ -1,0 +1,3 @@
+﻿matplotlib
+scipy
+scikit-commpy

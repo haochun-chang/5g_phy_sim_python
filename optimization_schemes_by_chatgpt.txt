@@ -1,0 +1,61 @@
+你的 5G PHY 模擬系統架構相當完整，涵蓋了 bit source、LDPC 編碼解碼、QAM 調變解調、OFDM 處理、通道模型、通道估計與等化等模組，整體流程清晰、模組化良好。不過，仍有幾個潛在改進方向可提升效能、靈活性與可維護性：
+
+---
+
+### ✅ 功能與效能強化建議
+
+1. **LLR 計算更精準**
+
+   * 目前在 LDPC 解碼前的 LLR 是用 `llr = 2 * rx_bits - 1` 來近似，這相當於硬判決。建議改成使用 QAM 的 soft demodulation 輸出真實的 LLR。
+   * `Modulator.demodulate(..., hard=False)` 就能提供 soft bits。
+
+2. **通道估計更精緻**
+
+   * 現階段的 MMSE 通道估計需提供真實通道 `h_true`，但這在實際應用無法取得。建議：
+
+     * 改以統計通道功率或估測頻率響應來進行正則化參數計算。
+     * 支援 DFT-based channel estimation 的進階實作（目前是簡易截斷時域 channel）。
+
+3. **Pilot 資源最佳化**
+
+   * Pilot 間距固定為 4，但未根據通道條件（例如最大 delay spread 或 Doppler shift）調整。建議研究 adaptive pilot spacing 或設計更接近 3GPP 規範的 pilot pattern。
+
+4. **可擴展性與參數化**
+
+   * 預設使用 QPSK、64 子載波與固定參數。建議讓 main 支援 CLI 或 config 檔輸入參數以便自動化測試不同組合（如 16QAM, 256QAM, subcarrier=128...）。
+
+---
+
+### 🧪 測試與評估建議
+
+5. **加入多組 SNR 分析**
+
+   * 目前只測試 SNR = 15 dB，建議做一個 sweep，例如 0\~20 dB，並畫出 BER vs. SNR 曲線。
+
+6. **支援多條通道模型**
+
+   * 目前為 exponential PDP，建議加入 ITU Vehicular A/B 或 EPA/EVA/ETU 模型的選項。
+
+7. **可視化工具**
+
+   * 畫出 constellation、通道頻率響應、估測誤差、BER 曲線等，有助 debug 與效能分析。
+
+---
+
+### 🧹 程式架構與效能建議
+
+8. **使用向量化提升效率**
+
+   * 部分迴圈（如 LDPC encode/decode）可以嘗試 batch 處理（需配合外部 LDPC 庫支援）。
+
+9. **模組測試單元（unit test）**
+
+   * 各模組（LDPC, OFDM, QAM）可加入簡易的測試驗證碼與自動化測試。
+
+10. **封裝與 API 設計**
+
+    * 讓每個模組提供更一致的 API，例如所有 encode/decode 都統一處理 array of bits 或 symbols。
+
+---
+
+如果你有特定目標（例如對齊 3GPP 規範、效能最佳化、加入 MIMO、多使用者等），我可以針對那些需求給更具體的建議。是否需要進一步幫你加上 BER vs. SNR 測試或 LLR 精準化的程式碼？

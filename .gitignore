@@ -1,3 +1,30 @@
+# Byte-compiled / temporary files
 .pytest_cache
-src/__pycache__/*
-tests/__pycache__/*
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Logs
+*.log
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python-specific
+*.egg-info/
+*.egg
+*.pyd
+*.pyo
+*.pdb
+dist/
+build/
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+
+# Virtual environments
+venv*/
+.env*/
