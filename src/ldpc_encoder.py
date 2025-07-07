@@ -11,7 +11,7 @@ class LDPCEncoder:
         self.n = n
 
     def encode(self, bits: np.ndarray) -> np.ndarray:
-        assert bits.size == self.k, f"Input bits length must be {self.k}"
+        assert bits.size == self.k, f"Input bits length must be {self.k}, cur = {bits.size}"
         codeword = encode(self.G, bits, snr=1000)   # 用pyldpc snr param為必填，先隨便填一個極大值
         codeword = (codeword + 1) // 2
         return codeword
