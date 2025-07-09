@@ -58,8 +58,8 @@ bit_source = BitSource(bit_len_limit_lcm * (num_ofdm_symbols // num_ofdm_symbols
 
 modulator = Modulator(mod_order)
 ofdm = OFDMModulator(n_subcarriers, cp_len)
-channel = ChannelModel(snr_db=snr_db, num_taps=8, decay=0.7, seed=42)
-estimator = ChannelEstimator(method='dft', interp='cubic', num_taps=8, adaptive_tap = True)
+channel = ChannelModel(snr_db=snr_db, fs=15.36e6, model_type='epa', seed=42)
+estimator = ChannelEstimator(method='lmmse', interp='cubic', num_taps=8, adaptive_tap=True, decay=0.7)
 equalizer = Equalizer(method='mmse')
 decoder = LDPCDecoder(G, H, 100)
 
@@ -143,7 +143,7 @@ rx_llr = modulator.demodulate(rx_symbols, hard=False, noise_var=noise_power / 2)
 #print("LLR min/max/mean/std:", rx_llr.min(), rx_llr.max(), rx_llr.mean(), rx_llr.std())
 
 # Clip 避免過大或過小值導致數值問題（根據 pyldpc 的建議範圍）
-# rx_llr = np.clip(rx_llr, -20, 20)
+rx_llr = np.clip(rx_llr, -20, 20)
 
 # LDPC 解碼
 decoded = []
