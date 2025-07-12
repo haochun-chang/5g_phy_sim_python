@@ -106,8 +106,8 @@ for i in range(num_ofdm_symbols):
     time = np.fft.ifft(freq)
     tx_symbol = np.concatenate([time[-cp_len:], time])  # add cp
     tx_signal.append(tx_symbol)
-#print(tx_signal[:5])
-#print(len(tx_signal))
+# print(tx_signal[:5])
+# print(len(tx_signal))
 tx_signal = np.concatenate(tx_signal)  # concat seperate symbols into a continual array
 
 # 通道處理
@@ -136,11 +136,11 @@ rx_symbols = np.concatenate(rx_data)
 # QAM 解調 (soft decision)
 # print(rx_symbols[:20])
 rx_llr = modulator.demodulate(rx_symbols, hard=False, noise_var=noise_power / 2)
-#rx_llr = modulator.demodulate(rx_symbols[:256], hard=False, noise_var=noise_power / 2)
+# rx_llr = modulator.demodulate(rx_symbols[:256], hard=False, noise_var=noise_power / 2)
 
 # Debug: 檢查 LLR 統計量與範圍
-#print(rx_llr[:20])
-#print("LLR min/max/mean/std:", rx_llr.min(), rx_llr.max(), rx_llr.mean(), rx_llr.std())
+# print(rx_llr[:20])
+# print("LLR min/max/mean/std:", rx_llr.min(), rx_llr.max(), rx_llr.mean(), rx_llr.std())
 
 # Clip 避免過大或過小值導致數值問題（根據 pyldpc 的建議範圍）
 rx_llr = np.clip(rx_llr, -20, 20)

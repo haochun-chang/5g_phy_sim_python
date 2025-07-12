@@ -2,12 +2,13 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 
 class ChannelEstimator:
-    def __init__(self, method='ls', interp='cubic', num_taps=8, adaptive_tap = False, decay=0.7):
+    def __init__(self, method='ls', interp='cubic', num_taps=8, adaptive_tap=False, decay=0.7, external_pdp=None):
         self.method = method  # 'ls', 'mmse', 'dft', or 'lmmse'
         self.interp = interp  # 'linear' or 'cubic'
         self.num_taps = num_taps
         self.adaptive_tap = adaptive_tap
         self.decay = decay
+        self.external_pdp = external_pdp
 
     def estimate(self, Yp, Xp, pilot_indices, n_subcarriers, noise_power=None):
         H_est = np.zeros(n_subcarriers, dtype=complex)
@@ -72,9 +73,13 @@ class ChannelEstimator:
             # Convert to time domain
             h_ls = np.fft.ifft(H_est, n=n_subcarriers)
 
-            # Define exponential power delay profile
-            profile = np.exp(-self.decay * np.arange(n_subcarriers))
-            profile /= np.sum(profile)
+            if self.external_pdp is not None:
+                profile = np.zeros(n_subcarriers)
+                profile[:len(self.external_pdp)] = self.external_pdp
+            else:
+                profile = np.exp(-self.decay * np.arange(n_subcarriers))
+                profile /= np.sum(profile)
+
             R_hh = np.diag(profile)
 
             # Construct LMMSE filter
